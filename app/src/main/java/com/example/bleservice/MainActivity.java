@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
                 UUID_CHARACTERISTIC_READ,
                 BluetoothGattCharacteristic.PROPERTY_READ,
                 BluetoothGattCharacteristic.PERMISSION_READ);
+
         //添加可读characteristic的descriptor
         BluetoothGattDescriptor descriptor = new BluetoothGattDescriptor(UUID_DESCRIPTOR, BluetoothGattCharacteristic.PERMISSION_WRITE);
         characteristicRead.addDescriptor(descriptor);
