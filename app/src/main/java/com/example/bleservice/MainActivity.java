@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothGattServer mGattServer;
  //   private String UUID="95f4a5a0-8434-4d94-aefc-71e018a4364e";
     private static final java.util.UUID UUID_SERVICE = java.util.UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");//蓝牙串口的通用UUID,UUID是什么东西
-    private static final java.util.UUID UUID_CHARACTERISTIC_READ = java.util.UUID.fromString("00001101-0000-1000-8000-00805F9B34FC");
+    private static final java.util.UUID UUID_CHARACTERISTIC_READ = java.util.UUID.fromString("00001101-0000-1000-8000-00805F9B34FC");//
     private static final java.util.UUID UUID_CHARACTERISTIC_WRITE = java.util.UUID.fromString("00001101-0000-1000-8000-00805F9B34FD");
     private static final java.util.UUID UUID_DESCRIPTOR = java.util.UUID.fromString("00001101-0000-1000-8000-00805F9B34FE");
     @Override
@@ -59,12 +59,18 @@ public class MainActivity extends AppCompatActivity {
 
         AdvertiseSettings settings = new AdvertiseSettings.Builder()
                 .setConnectable(true)
+//                .setAdvertiseMode()
+//                .setTimeout()
+//                .setTxPowerLevel()
                 .build();
 
        //BLE服务响应的数据????????
         AdvertiseData advertiseData = new AdvertiseData.Builder()
                 .setIncludeDeviceName(true)
                 .setIncludeTxPowerLevel(true)
+//                .addServiceUuid()
+//                .addServiceData()
+//                .addManufacturerData()
                 .build();
 
         //BLE服务响应的数据
@@ -98,9 +104,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //开始广播
-        if (bluetoothLeAdvertiser != null) {
+        if (bluetoothLeAdvertiser != null) {//todo 需要停止广播
             Log.d(TAG, "initGATTServer: 开始广播");
-            bluetoothLeAdvertiser.startAdvertising(settings, advertiseData, scanResponseData, callback);
+            bluetoothLeAdvertiser.startAdvertising(settings, advertiseData, scanResponseData, callback);//开发其他设备搜索
         }
     }
 
@@ -265,7 +271,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, String.format("4.onResponseToClient：device name = %s, address = %s", device.getName(), device.getAddress()));
         Log.d(TAG, String.format("4.onResponseToClient：requestId = %s", requestId));
 //        String msg = OutputStringUtil.transferForPrint(reqeustBytes);
-        Log.d(TAG, "4.收到：");
+        Log.d(TAG, "4.收到：reqeustBytes1="+reqeustBytes[0]);
         //println("4.收到:" + msg);
         //showText("4.收到:" + msg);
 
