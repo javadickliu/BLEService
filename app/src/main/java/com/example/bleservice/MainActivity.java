@@ -34,11 +34,14 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBlueToothAdapter;
     private BluetoothGattServer mGattServer;
- //   private String UUID="95f4a5a0-8434-4d94-aefc-71e018a4364e";
+    //   private String UUID="95f4a5a0-8434-4d94-aefc-71e018a4364e";
     private static final java.util.UUID UUID_SERVICE = java.util.UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");//蓝牙串口的通用UUID,UUID是什么东西
     private static final java.util.UUID UUID_CHARACTERISTIC_READ = java.util.UUID.fromString("00001101-0000-1000-8000-00805F9B34FC");//
     private static final java.util.UUID UUID_CHARACTERISTIC_WRITE = java.util.UUID.fromString("00001101-0000-1000-8000-00805F9B34FD");
     private static final java.util.UUID UUID_DESCRIPTOR = java.util.UUID.fromString("00001101-0000-1000-8000-00805F9B34FE");
+    private static final java.util.UUID UUID_DESCRIPTOR_NOTIFY = java.util.UUID.fromString("00001101-0000-1000-8000-00805F9B34FF");
+    private BluetoothGattCharacteristic characteristicWrite;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,26 +60,28 @@ public class MainActivity extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void initGATTServer() {
 
-        AdvertiseSettings settings = new AdvertiseSettings.Builder()
-                .setConnectable(true)
-//                .setAdvertiseMode()
-//                .setTimeout()
-//                .setTxPowerLevel()
+        AdvertiseSettings settings = new AdvertiseSettings.Builder()//BLE广播设置
+                .setConnectable(true)//设置广播是否可连接,广播分为可连接和不可连接的
+                .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY)// AdvertiseSettings#ADVERTISE_MODE_LOW_POWER},低功耗
+                //AdvertiseSettings#ADVERTISE_MODE_BALANCED},平衡
+                //AdvertiseSettings#ADVERTISE_MODE_LOW_LATENCY}.低延迟 设置广播模式
+                .setTimeout(0)//设置广播超时时间,默认是0具体不是很理解什么意思
+                // .setTxPowerLevel()//设置广播的发送功率级别,极低,低,中,高,具体看源码
                 .build();
 
-       //BLE服务响应的数据????????
+        //设置广播数据,广播启动就会发送这个数据
         AdvertiseData advertiseData = new AdvertiseData.Builder()
-                .setIncludeDeviceName(true)
-                .setIncludeTxPowerLevel(true)
-//                .addServiceUuid()
-//                .addServiceData()
-//                .addManufacturerData()
+                .setIncludeDeviceName(true)//设置的数据是否包含蓝牙名称
+                .setIncludeTxPowerLevel(true)//设置的数据数据是否包含功率级别
+//                .addServiceUuid(true)//设置的数据是否包含UUID
+//                .addServiceData()//????
+//                .addManufacturerData()设置自定义的数据
                 .build();
 
-        //BLE服务响应的数据
+        //设置广播相应数据,客户端连接的时候才会发送
         AdvertiseData scanResponseData = new AdvertiseData.Builder()
-                .addServiceUuid(new ParcelUuid(UUID_SERVICE))
-                .setIncludeTxPowerLevel(true)
+                .addServiceUuid(new ParcelUuid(UUID_SERVICE))//设置服务ServiceUUID
+                .setIncludeTxPowerLevel(true)//设置的数据数据是否包含功率级别
                 .build();
 
         //广播创建成功之后的回调
@@ -118,29 +123,35 @@ public class MainActivity extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void initServices(Context context) {
         //创建GattServer服务器
-        mGattServer = mBluetoothManager.openGattServer(context, bluetoothGattServerCallback);
+        mGattServer = mBluetoothManager.openGattServer(context, bluetoothGattServerCallback);//开启GATTService其他设备才能发现BLE服务
 
         //这个指定的创建指定UUID的服务
         BluetoothGattService service = new BluetoothGattService(UUID_SERVICE, BluetoothGattService.SERVICE_TYPE_PRIMARY);
 
-        //添加指定UUID的可读characteristic
-        characteristicRead = new BluetoothGattCharacteristic(
-                UUID_CHARACTERISTIC_READ,
-                BluetoothGattCharacteristic.PROPERTY_READ,
-                BluetoothGattCharacteristic.PERMISSION_READ);
+//        //添加指定UUID的可读characteristic
+//        characteristicRead = new BluetoothGattCharacteristic(
+//                UUID_CHARACTERISTIC_READ,
+//                BluetoothGattCharacteristic.PROPERTY_READ,
+//                BluetoothGattCharacteristic.PERMISSION_READ);
+//
+//        //添加可读characteristic的descriptor
+////        BluetoothGattDescriptor descriptor = new BluetoothGattDescriptor(UUID_DESCRIPTOR, BluetoothGattCharacteristic.PERMISSION_WRITE);
+////        characteristicRead.addDescriptor(descriptor);
+//        service.addCharacteristic(characteristicRead);
 
-        //添加可读characteristic的descriptor
-        BluetoothGattDescriptor descriptor = new BluetoothGattDescriptor(UUID_DESCRIPTOR, BluetoothGattCharacteristic.PERMISSION_WRITE);
-        characteristicRead.addDescriptor(descriptor);
-        service.addCharacteristic(characteristicRead);
 
-
-        //添加指定UUID的可写characteristic
-        BluetoothGattCharacteristic characteristicWrite = new BluetoothGattCharacteristic(UUID_CHARACTERISTIC_WRITE,
+        //添加可读可写可通知的characteristic
+        characteristicWrite = new BluetoothGattCharacteristic(UUID_CHARACTERISTIC_WRITE,
                 BluetoothGattCharacteristic.PROPERTY_WRITE |
                         BluetoothGattCharacteristic.PROPERTY_READ |
                         BluetoothGattCharacteristic.PROPERTY_NOTIFY,
                 BluetoothGattCharacteristic.PERMISSION_WRITE);
+
+        //
+        BluetoothGattDescriptor descriptorNotify = new BluetoothGattDescriptor(UUID_DESCRIPTOR_NOTIFY, BluetoothGattCharacteristic.PERMISSION_WRITE);
+        characteristicWrite.addDescriptor(descriptorNotify);
+
+
         service.addCharacteristic(characteristicWrite);
 
         mGattServer.addService(service);
@@ -222,6 +233,13 @@ public class MainActivity extends AppCompatActivity {
 
             // now tell the connected device that this was all successfull
             mGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, value);
+
+
+            final BluetoothGattCharacteristic characteristic = descriptor.getCharacteristic();
+            String response = "CHAR_" + (int) (Math.random() * 100); //模拟数据
+            characteristic.setValue(response);
+            mGattServer.notifyCharacteristicChanged(device, characteristic, false);
+
         }
 
         /**
@@ -260,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     /**
-     * 4.处理响应内容
+     * 4.处理onCharacteristicWriteRequest响应内容
      *
      * @param reqeustBytes
      * @param device
@@ -271,16 +289,24 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, String.format("4.onResponseToClient：device name = %s, address = %s", device.getName(), device.getAddress()));
         Log.d(TAG, String.format("4.onResponseToClient：requestId = %s", requestId));
 //        String msg = OutputStringUtil.transferForPrint(reqeustBytes);
-        Log.d(TAG, "4.收到：reqeustBytes1="+reqeustBytes[0]);
+        Log.d(TAG, "4.收到：reqeustBytes1=" + reqeustBytes[0]);
         //println("4.收到:" + msg);
         //showText("4.收到:" + msg);
 
-        String str = new String(reqeustBytes) + " hello>";
-        characteristicRead.setValue(str.getBytes());
-        mGattServer.notifyCharacteristicChanged(device, characteristicRead, false);
+//        String str = new String(reqeustBytes) + " hello BLE Recevie Your Data";
+//        characteristicRead.setValue(str.getBytes());
+//        mGattServer.notifyCharacteristicChanged(device, characteristicRead, false);//通知客户端服务器收到消息
 
-        Log.i(TAG, "4.响应：" + str);
-     //   MainActivity.handler.obtainMessage(MainActivity.DEVICE, new String(reqeustBytes)).sendToTarget();
+//        String strTemp = new String(reqeustBytes) + " hello BLE Recevie Your Data";
+//        characteristicWrite.setValue(strTemp.getBytes());
+//        characteristic
+//        BluetoothGattCharacteristic characteristic = descriptor.getCharacteristic();
+
+        //       mGattServer.notifyCharacteristicChanged(device, characteristicWrite, false);//通知客户端服务器收到消息
+
+
+      //  Log.i(TAG, "4.响应：" + str);
+        //   MainActivity.handler.obtainMessage(MainActivity.DEVICE, new String(reqeustBytes)).sendToTarget();
         //println("4.响应:" + str);
         //showText("4.响应:" + str);
     }
