@@ -9,6 +9,7 @@ import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattServer;
@@ -35,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothAdapter mBlueToothAdapter;
     private BluetoothGattServer mGattServer;
     //   private String UUID="95f4a5a0-8434-4d94-aefc-71e018a4364e";
-    private static final java.util.UUID UUID_SERVICE = java.util.UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");//蓝牙串口的通用UUID,UUID是什么东西
+    private static final java.util.UUID UUID_SERVICE = java.util.UUID.fromString("0783B03E-8535-B5A0-7140-A304D2495CB7");//蓝牙串口的通用UUID,UUID是什么东西
     private static final java.util.UUID UUID_CHARACTERISTIC_READ = java.util.UUID.fromString("00001101-0000-1000-8000-00805F9B34FC");//
     private static final java.util.UUID UUID_CHARACTERISTIC_WRITE = java.util.UUID.fromString("00001101-0000-1000-8000-00805F9B34FD");
     private static final java.util.UUID UUID_DESCRIPTOR = java.util.UUID.fromString("00001101-0000-1000-8000-00805F9B34FE");
@@ -46,6 +47,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+      //  BluetoothGattCharacteristic
+       //         BluetoothGattCallback
         mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         mBlueToothAdapter = mBluetoothManager.getAdapter();
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {//如果该权限没有获得权限
@@ -68,7 +71,6 @@ public class MainActivity extends AppCompatActivity {
                 .setTimeout(0)//设置广播超时时间,默认是0具体不是很理解什么意思
                 // .setTxPowerLevel()//设置广播的发送功率级别,极低,低,中,高,具体看源码
                 .build();
-
         //设置广播数据,广播启动就会发送这个数据
         AdvertiseData advertiseData = new AdvertiseData.Builder()
                 .setIncludeDeviceName(true)//设置的数据是否包含蓝牙名称
@@ -142,10 +144,10 @@ public class MainActivity extends AppCompatActivity {
 
         //添加可读可写可通知的characteristic
         characteristicWrite = new BluetoothGattCharacteristic(UUID_CHARACTERISTIC_WRITE,
-                BluetoothGattCharacteristic.PROPERTY_WRITE |
+                BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE|
                         BluetoothGattCharacteristic.PROPERTY_READ |
                         BluetoothGattCharacteristic.PROPERTY_NOTIFY,
-                BluetoothGattCharacteristic.PERMISSION_WRITE);
+                BluetoothGattCharacteristic.PERMISSION_WRITE);//todo PERMISSION_WRITE 和PROPERTY_NOTIFY如何使用
 
         //
         BluetoothGattDescriptor descriptorNotify = new BluetoothGattDescriptor(UUID_DESCRIPTOR_NOTIFY, BluetoothGattCharacteristic.PERMISSION_WRITE);
@@ -155,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
         service.addCharacteristic(characteristicWrite);
 
         mGattServer.addService(service);
-        Log.e(TAG, "2. initServices ok");
+        Log.e(TAG, "2. initServices ok1");
         //showText("2. initServices ok");
     }
 
