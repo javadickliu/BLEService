@@ -30,7 +30,7 @@ import android.util.Log;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "MainActivityS";
     private BluetoothGattCharacteristic characteristicRead;
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBlueToothAdapter;
@@ -212,10 +212,15 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onCharacteristicWriteRequest(BluetoothDevice device, int requestId, BluetoothGattCharacteristic characteristic, boolean preparedWrite, boolean responseNeeded, int offset, byte[] requestBytes) {
             Log.d(TAG, String.format("3.onCharacteristicWriteRequest：device name = %s, address = %s", device.getName(), device.getAddress()));
-            Log.d(TAG, String.format("3.onCharacteristicWriteRequest：requestId = %s, preparedWrite=%s, responseNeeded=%s, offset=%s, value=%s", requestId, preparedWrite, responseNeeded, offset, requestBytes.toString()));
+            Log.d(TAG, String.format("3.onCharacteristicWriteRequest：requestId = %s, preparedWrite=%s, responseNeeded=%s, offs1et=%s, value=%s", requestId, preparedWrite, responseNeeded, offset, requestBytes.toString()));
             mGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, requestBytes);
             //4.处理响应内容
-            onResponseToClient(requestBytes, device, requestId, characteristic);
+      //      final BluetoothGattCharacteristic characteristic = descriptor.getCharacteristic();
+            String response = ""; //模拟数据
+            byte[] bytes={0x11};
+            characteristic.setValue(bytes);
+            mGattServer.notifyCharacteristicChanged(device, characteristic, false);
+      //    onResponseToClient(requestBytes, device, requestId, characteristic);
         }
 
         /**
@@ -291,13 +296,13 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, String.format("4.onResponseToClient：device name = %s, address = %s", device.getName(), device.getAddress()));
         Log.d(TAG, String.format("4.onResponseToClient：requestId = %s", requestId));
 //        String msg = OutputStringUtil.transferForPrint(reqeustBytes);
-        Log.d(TAG, "4.收到：reqeustBytes1=" + reqeustBytes[0]);
+        Log.d(TAG, "4.收到：reqeustBytes12=" + reqeustBytes[0]);
         //println("4.收到:" + msg);
         //showText("4.收到:" + msg);
 
-//        String str = new String(reqeustBytes) + " hello BLE Recevie Your Data";
-//        characteristicRead.setValue(str.getBytes());
-//        mGattServer.notifyCharacteristicChanged(device, characteristicRead, false);//通知客户端服务器收到消息
+        String str = new String(reqeustBytes) + " hello BLE Recevie Your Data1";
+        characteristicWrite.setValue(str.getBytes());
+        mGattServer.notifyCharacteristicChanged(device, characteristicWrite, false);//通知客户端服务器收到消息
 
 //        String strTemp = new String(reqeustBytes) + " hello BLE Recevie Your Data";
 //        characteristicWrite.setValue(strTemp.getBytes());
