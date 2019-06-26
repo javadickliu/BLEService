@@ -26,6 +26,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.util.Log;
+import android.view.View;
 
 import java.util.UUID;
 
@@ -56,7 +57,6 @@ public class MainActivity extends AppCompatActivity {
         }
         initGATTServer();
     }
-
     /**
      * 1.初始化BLE蓝牙广播Advertiser，配置指定UUID的服务
      */
